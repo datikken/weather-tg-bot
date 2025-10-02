@@ -10,22 +10,22 @@ Simple Telegram bot that returns current weather and a short forecast by city na
 - In-memory cache (5 minutes)
 
 ### Prerequisites
-- Node.js 18+
+- Docker 20+
 - Telegram Bot Token (via BotFather)
 - OpenWeather API key (`https://openweathermap.org/api`)
 
-### Setup
-1. Clone the repo and install dependencies:
+### Run with Docker (recommended)
+Build image:
 ```bash
-npm install
+docker build -t weather-bot .
 ```
-2. Create `.env` from example and fill values:
+
+Run container (replace values):
 ```bash
-cp .env.example .env
-```
-3. Start the bot:
-```bash
-npm run start
+echo "BOT_TOKEN=YOUR_TELEGRAM_BOT_TOKEN" > .env
+echo "OPENWEATHER_API_KEY=YOUR_OPENWEATHER_KEY" >> .env
+echo "DEFAULT_UNITS=metric" >> .env
+docker run -d --name weather-bot --restart unless-stopped --env-file ./.env weather-bot:latest
 ```
 
 ### Commands
@@ -34,13 +34,14 @@ npm run start
 - /celsius — switch to °C
 - /fahrenheit — switch to °F
 
-### Testing
+### Testing (inside Docker)
 ```bash
-npm test
+docker run --rm -e CI=true weather-bot npm test
 ```
 
 ### Notes
 - Cache TTL is 5 minutes and stored in-memory.
 - Units are stored in-memory per chat and reset on restart.
+- This project is intended to be run via Docker only.
 
 
