@@ -86,8 +86,6 @@ bot.on('message', async (msg) => {
       cache.set(cacheKey, data);
     }
 
-    console.log(data, 'data by loc')
-
     const message = formatWeatherMessage(data, units);
     await bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
   } catch (err) {

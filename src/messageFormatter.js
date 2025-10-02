@@ -5,8 +5,7 @@ function formatTemp(value, units) {
 
 function formatWind(value, units) {
   if (value === null || value === undefined) return '—';
-  const speed = units === 'imperial' ? `${Math.round(value)} mph` : `${Math.round(value)} m/s`;
-  return speed;
+    return units === 'imperial' ? `${Math.round(value)} mph` : `${Math.round(value)} m/s`;
 }
 
 function formatWeatherMessage(parsed, units) {
@@ -21,8 +20,4 @@ function formatWeatherMessage(parsed, units) {
 
 module.exports = {
   formatWeatherMessage,
-  formatTemp,
-  formatWind
 };
-
-

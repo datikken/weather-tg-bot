@@ -14,12 +14,7 @@ function createTtlCache({ ttlMs }) {
     set(key, value) {
       store.set(key, { value, expiresAt: Date.now() + ttlMs });
     },
-    clear() {
-      store.clear();
-    }
   };
 }
 
 module.exports = { createTtlCache };
-
-
