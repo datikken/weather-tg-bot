@@ -1,4 +1,4 @@
-const { formatWeatherMessage } = require('../src/messageFormatter');
+import { formatWeatherMessage } from '../src/messageFormatter';
 
 describe('messageFormatter', () => {
   test('formats message in metric', () => {
@@ -9,7 +9,7 @@ describe('messageFormatter', () => {
       feelsLike: 1.2,
       windSpeed: 4.7,
     };
-    const msg = formatWeatherMessage(parsed, 'metric');
+    const msg = formatWeatherMessage(parsed as any, 'metric');
     expect(msg).toContain('*Moscow*');
     expect(msg).toContain('Ясно');
     expect(msg).toContain('Температура: 4 °C');
@@ -25,7 +25,7 @@ describe('messageFormatter', () => {
       feelsLike: 66.5,
       windSpeed: 8.9,
     };
-    const msg = formatWeatherMessage(parsed, 'imperial');
+    const msg = formatWeatherMessage(parsed as any, 'imperial');
     expect(msg).toContain('*New York*');
     expect(msg).toContain('Broken clouds');
     expect(msg).toContain('Температура: 68 °F');

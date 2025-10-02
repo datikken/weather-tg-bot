@@ -1,9 +1,10 @@
-require('dotenv').config();
+import 'dotenv/config';
+import TelegramBot from 'node-telegram-bot-api';
+import { getWeatherByCity, getWeatherByCoords, parseWeatherResponse } from './weatherClient';
+import { formatWeatherMessage } from './messageFormatter';
+import { createTtlCache } from './ttlCache';
 
-const TelegramBot = require('node-telegram-bot-api');
-const { getWeatherByCity, getWeatherByCoords, parseWeatherResponse } = require('./weatherClient');
-const { formatWeatherMessage } = require('./messageFormatter');
-const { createTtlCache } = require('./ttlCache');
+type Units = 'metric' | 'imperial';
 
 const token = process.env.BOT_TOKEN;
 if (!token) {
@@ -13,15 +14,14 @@ if (!token) {
 
 const bot = new TelegramBot(token, { polling: true });
 
-// In-memory per-chat units preference and weather cache
-const chatUnits = new Map(); // chatId -> 'metric' | 'imperial'
-const cache = createTtlCache({ ttlMs: 5 * 60 * 1000 });
+const chatUnits: Map<number, Units> = new Map();
+const cache = createTtlCache<{ cityName: string; description: string; temperature: number; feelsLike: number; windSpeed: number }>({ ttlMs: 5 * 60 * 1000 });
 
-function getUnitsForChat(chatId) {
-  return chatUnits.get(chatId) || process.env.DEFAULT_UNITS || 'metric';
+function getUnitsForChat(chatId: number): Units {
+  return (chatUnits.get(chatId) as Units) || (process.env.DEFAULT_UNITS as Units) || 'metric';
 }
 
-bot.onText(/^\/start$/, async (msg) => {
+bot.onText(/^\/start$/, async (msg: any) => {
   const chatId = msg.chat.id;
   const text = 'Привет! Я бот погоды. Используй:\n' +
     '/weather <город> — текущая погода\n' +
@@ -30,19 +30,19 @@ bot.onText(/^\/start$/, async (msg) => {
   await bot.sendMessage(chatId, text);
 });
 
-bot.onText(/^\/celsius$/, async (msg) => {
+bot.onText(/^\/celsius$/, async (msg: any) => {
   const chatId = msg.chat.id;
   chatUnits.set(chatId, 'metric');
   await bot.sendMessage(chatId, 'Единицы измерения: °C');
 });
 
-bot.onText(/^\/fahrenheit$/, async (msg) => {
+bot.onText(/^\/fahrenheit$/, async (msg: any) => {
   const chatId = msg.chat.id;
   chatUnits.set(chatId, 'imperial');
   await bot.sendMessage(chatId, 'Единицы измерения: °F');
 });
 
-bot.onText(/^\/weather\s+(.+)/i, async (msg, match) => {
+bot.onText(/^\/weather\s+(.+)/i, async (msg: any, match: RegExpExecArray | null) => {
   const chatId = msg.chat.id;
   const city = (match && match[1]) ? match[1].trim() : '';
   if (!city) {
@@ -60,29 +60,27 @@ bot.onText(/^\/weather\s+(.+)/i, async (msg, match) => {
     }
 
     const message = formatWeatherMessage(data, units);
-    console.log(message)
     await bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
   } catch (err) {
     await bot.sendMessage(chatId, 'Не удалось получить погоду. Проверь город или попробуй позже.');
   }
 });
 
-// Handle Telegram geolocation messages
-bot.on('message', async (msg) => {
+bot.on('message', async (msg: any) => {
   try {
     const chatId = msg.chat.id;
     const location = msg.location;
     if (!location) return;
 
     const units = getUnitsForChat(chatId);
-    const latRounded = Math.round(location.latitude * 100) / 100; // ~1.1km precision
+    const latRounded = Math.round(location.latitude * 100) / 100;
     const lonRounded = Math.round(location.longitude * 100) / 100;
     const cacheKey = `coords:${units}:${latRounded},${lonRounded}`;
 
     let data = cache.get(cacheKey);
     if (!data) {
       const raw = await getWeatherByCoords(location.latitude, location.longitude, units);
-      data = parseWeatherResponse(raw, '');
+      data = parseWeatherResponse(raw);
       cache.set(cacheKey, data);
     }
 
@@ -95,4 +93,3 @@ bot.on('message', async (msg) => {
     }
   }
 });
-
