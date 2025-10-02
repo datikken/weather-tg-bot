@@ -1,0 +1,28 @@
+{
+  "name": "weather-bot",
+  "version": "1.0.0",
+  "description": "Telegram bot that returns current weather and short forecast by city or location.",
+  "main": "src/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "jest --runInBand"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "weather"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.7.7",
+    "dotenv": "^16.4.5",
+    "node-telegram-bot-api": "^0.66.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.7"
+  }
+}
