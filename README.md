@@ -44,4 +44,7 @@ docker run --rm -e CI=true weather-bot npm test
 - Units are stored in-memory per chat and reset on restart.
 - This project is intended to be run via Docker only.
 
+### TODO
+- Logging, Sentry or filebased
+- Linting 
 
