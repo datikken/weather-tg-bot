@@ -1,7 +1,7 @@
 require('dotenv').config();
 
 const TelegramBot = require('node-telegram-bot-api');
-const { getWeatherByCity } = require('./weatherClient');
+const { getWeatherByCity, getWeatherByCoords, parseWeatherResponse } = require('./weatherClient');
 const { formatWeatherMessage } = require('./messageFormatter');
 const { createTtlCache } = require('./ttlCache');
 
@@ -67,4 +67,34 @@ bot.onText(/^\/weather\s+(.+)/i, async (msg, match) => {
   }
 });
 
+// Handle Telegram geolocation messages
+bot.on('message', async (msg) => {
+  try {
+    const chatId = msg.chat.id;
+    const location = msg.location;
+    if (!location) return;
+
+    const units = getUnitsForChat(chatId);
+    const latRounded = Math.round(location.latitude * 100) / 100; // ~1.1km precision
+    const lonRounded = Math.round(location.longitude * 100) / 100;
+    const cacheKey = `coords:${units}:${latRounded},${lonRounded}`;
+
+    let data = cache.get(cacheKey);
+    if (!data) {
+      const raw = await getWeatherByCoords(location.latitude, location.longitude, units);
+      data = parseWeatherResponse(raw, '');
+      cache.set(cacheKey, data);
+    }
+
+    console.log(data, 'data by loc')
+
+    const message = formatWeatherMessage(data, units);
+    await bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+  } catch (err) {
+    const chatId = msg.chat && msg.chat.id;
+    if (chatId) {
+      await bot.sendMessage(chatId, 'Не удалось получить погоду по геолокации. Попробуй позже.');
+    }
+  }
+});
 

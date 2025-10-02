@@ -57,6 +57,7 @@ async function getWeatherByCoords(lat, lon, units) {
 
 module.exports = {
     getWeatherByCity,
+    getWeatherByCoords,
     parseWeatherResponse
 };
 
