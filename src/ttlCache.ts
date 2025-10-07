@@ -1,3 +1,5 @@
+import { LogMethod } from './decorators';
+
 type CacheEntry<T> = { value: T; expiresAt: number };
 
 export class TtlCache<T> {
@@ -8,6 +10,7 @@ export class TtlCache<T> {
     this.ttlMs = ttlMs;
   }
 
+  @LogMethod
   get(key: string): T | null {
     const entry = this.store.get(key);
     if (!entry) return null;
@@ -18,6 +21,7 @@ export class TtlCache<T> {
     return entry.value;
   }
 
+  @LogMethod
   set(key: string, value: T): void {
     this.store.set(key, { value, expiresAt: Date.now() + this.ttlMs });
   }

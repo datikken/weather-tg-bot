@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { LogMethod } from './decorators';
 
 export type Units = 'metric' | 'imperial';
 
@@ -59,12 +60,14 @@ export class WeatherClient {
         };
     }
 
+    @LogMethod
     async getWeatherByCity(city: string, units: Units = 'metric'): Promise<ParsedWeather> {
         const { lat, lon } = await this.geocodeCity(city);
         const data = await this.getWeatherByCoords(lat, lon, units);
         return WeatherClient.parseWeatherResponse(data);
     }
 
+    @LogMethod
     async getWeatherByCoords(lat: number, lon: number, units: Units = 'metric'): Promise<FindApiResponse> {
         const url = `${this.apiUrl}?lat=${lat}&lon=${lon}&appid=${this.apiKey}&units=${units}&lang=ru`;
         const { data } = await axios.get(url, { timeout: 8000 });

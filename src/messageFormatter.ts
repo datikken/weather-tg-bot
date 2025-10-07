@@ -1,4 +1,5 @@
 import type { ParsedWeather, Units } from './weatherClient';
+import { LogMethod } from './decorators';
 
 export class MessageFormatter {
   static formatTemp(value: number | null | undefined, units: Units): string {
@@ -12,6 +13,7 @@ export class MessageFormatter {
     return speed;
   }
 
+  @LogMethod
   static formatWeatherMessage(parsed: ParsedWeather, units: Units): string {
     const city = parsed.cityName || '—';
     const desc = parsed.description ? (parsed.description[0].toUpperCase() + parsed.description.slice(1)) : '—';
