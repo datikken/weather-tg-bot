@@ -1,23 +1,33 @@
 type CacheEntry<T> = { value: T; expiresAt: number };
 
-export function createTtlCache<T>({ ttlMs }: { ttlMs: number }) {
-  const store = new Map<string, CacheEntry<T>>();
+export class TtlCache<T> {
+  private store = new Map<string, CacheEntry<T>>();
+  private ttlMs: number;
 
-  return {
-    get(key: string): T | null {
-      const entry = store.get(key);
-      if (!entry) return null;
-      if (Date.now() > entry.expiresAt) {
-        store.delete(key);
-        return null;
-      }
-      return entry.value;
-    },
-    set(key: string, value: T): void {
-      store.set(key, { value, expiresAt: Date.now() + ttlMs });
-    },
-    clear(): void {
-      store.clear();
+  constructor({ ttlMs }: { ttlMs: number }) {
+    this.ttlMs = ttlMs;
+  }
+
+  get(key: string): T | null {
+    const entry = this.store.get(key);
+    if (!entry) return null;
+    if (Date.now() > entry.expiresAt) {
+      this.store.delete(key);
+      return null;
     }
-  };
+    return entry.value;
+  }
+
+  set(key: string, value: T): void {
+    this.store.set(key, { value, expiresAt: Date.now() + this.ttlMs });
+  }
+
+  clear(): void {
+    this.store.clear();
+  }
+}
+
+// For backward compatibility, perhaps export a factory
+export function createTtlCache<T>({ ttlMs }: { ttlMs: number }) {
+  return new TtlCache<T>({ ttlMs });
 }
